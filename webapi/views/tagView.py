@@ -1,0 +1,49 @@
+import json
+
+from django.core import serializers
+from django.http import HttpResponse
+from django.http import QueryDict
+from django.shortcuts import get_object_or_404
+from django.forms.models import model_to_dict
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .. models.tag import tag
+from .. serializers.tagSerializer import tagSerializer
+from .. services.api.getCookies import getCookies
+
+class tagView(APIView):
+
+    def getTagsByLvl(self, lvl):
+        tags = tag.objects.get(lvl=lvl)
+        return tags
+
+    def options(self, request):
+        response = Response()
+        response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
+        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Request-Method'] = 'GET, POST'
+        response['Access-Control-Allow-Credentials'] = 'true'
+        response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
+        return response
+
+    def post(self, request):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Credentials'] = 'true'
+        data = request.POST.dict()
+        cookies = json.loads(str(request.COOKIES).replace("\'", "\""))
+        uToken = None
+        if 'utoken' in cookies:
+            uToken = cookies["utoken"]
+            tags = self.getTagsByLvl(int(data['lvl']))
+            serializer = tagSerializer(tags, many=True)
+            response.data = serializer.data
+            response.status = status.HTTP_200_OK
+            print(uToken)
+        else:
+            print("No cookies!")
+            response.data = 'Error!'
+            response.status = status.HTTP_200_OK
+        return response
