@@ -78,7 +78,10 @@ class productList(APIView):
                     print(query)
                     pics = QueryDict(query['pics_list']).dict().values()
                     print(pics)
+                    tags = QueryDict(query['tags']).dict().values()
+                    print(tags)
                     query['pics_list'] = pics
+                    query['tags'] = tags
                     print(query)
                     serializer = productSerializer(data = query)
                     if serializer.is_valid():

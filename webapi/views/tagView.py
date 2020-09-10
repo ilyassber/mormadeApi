@@ -15,7 +15,14 @@ from .. services.api.getCookies import getCookies
 class tagView(APIView):
 
     def getTagsByLvl(self, lvl):
-        tags = tag.objects.get(lvl=lvl)
+        tags = tag.objects.filter(lvl=lvl)
+        return tags
+
+    def getTagsByFather(self, id):
+        tags = []
+        father = tag.objects.get(id=id)
+        for i in father.childs:
+            tags.append(tag.objects.get(id=i))
         return tags
 
     def options(self, request):
@@ -33,12 +40,17 @@ class tagView(APIView):
         response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
         response['Access-Control-Allow-Credentials'] = 'true'
         data = request.POST.dict()
+        print(data)
         cookies = json.loads(str(request.COOKIES).replace("\'", "\""))
         uToken = None
         if 'utoken' in cookies:
             uToken = cookies["utoken"]
-            tags = self.getTagsByLvl(int(data['lvl']))
+            if data['id'] == None or data['id'] == '':
+                tags = self.getTagsByLvl(int(data['lvl']))
+            else:
+                tags = self.getTagsByFather(int(data['id']))
             serializer = tagSerializer(tags, many=True)
+            print(serializer.data)
             response.data = serializer.data
             response.status = status.HTTP_200_OK
             print(uToken)
