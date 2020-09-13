@@ -20,6 +20,7 @@ from webapi.views import productView
 from webapi.views.userView import userView
 from webapi.views.imageView import imageView
 from webapi.views.tagView import tagView
+from webapi.views.articleView import articleView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -31,4 +32,5 @@ urlpatterns = [
     path('images/<int:id>', imageView.as_view()),
     path('images/', imageView.as_view()),
     path('categories/', tagView.as_view()),
+    path('articles/', articleView.as_view()),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
