@@ -25,7 +25,16 @@ SECRET_KEY = '31r$#tbv-9yliqxg$5mvtm((hlr3t_mbzy)06rwc9reg=nn9rn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+HOST = 'http://localhost:3000'
+DOMAIN = 'localhost'
+
+ALLOWED_HOSTS = [
+    '3.128.254.253',
+    'www.mormade.com',
+    'www.mormade.ma',
+    'mormade.com',
+    'mormade.ma'
+]
 
 
 # Application definition
@@ -84,7 +93,7 @@ DATABASES = {
         'USER': 'alpha',
         'PASSWORD': 'bavacaxawa',
         'HOST': 'localhost',
-        'PORT': '5432',
+        'PORT': '',
     }
 }
 
@@ -132,11 +141,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    "C:/Users/1337/Pictures/Saved Pictures",
-]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 import json
 from uuid import uuid4
 import time;
@@ -22,19 +23,19 @@ class userView(APIView):
 
     def logOut(self, uToken):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         tokenInstance = token.objects.get(key=uToken)
         tokenInstance.expiration_date = 0
         tokenInstance.save()
-        response['Set-Cookie'] = 'utoken=; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=localhost; Path=/; HttpOnly; SameSite=Strict'
+        response['Set-Cookie'] = 'utoken=; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=' + settings.DOMAIN + '; Path=/; HttpOnly; SameSite=Strict'
         response.status = status.HTTP_201_CREATED
         response.data = 'logout'
         return response
 
     def signUp(self, data):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         is_exist = user.objects.filter(email = data["email"]).count()
         if is_exist == 0:
@@ -55,7 +56,7 @@ class userView(APIView):
                 response.data = serializer.data
                 print(response.data)
                 response.status = status.HTTP_201_CREATED
-                response['Set-Cookie'] = 'utoken=' + str(tokenInstance.key)+ "; Domain=localhost; Path=/; HttpOnly; SameSite=Strict"
+                response['Set-Cookie'] = 'utoken=' + str(tokenInstance.key)+ "; Domain=" + settings.DOMAIN + "; Path=/; HttpOnly; SameSite=Strict"
                 return response
             response.data = serializer.errors
             response.status = status.HTTP_400_BAD_REQUEST
@@ -67,7 +68,7 @@ class userView(APIView):
 
     def login(self, data):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         userInstance = user.objects.get(email=data["email"])
         if not (userInstance == None):
@@ -79,7 +80,7 @@ class userView(APIView):
                     expiration_date=((3600*24*30) + time.time())
                 )
                 tokenInstance.save()
-                response['Set-Cookie'] = 'utoken=' + str(tokenInstance.key) + "; Domain=localhost; Path=/; HttpOnly; SameSite=Strict"
+                response['Set-Cookie'] = 'utoken=' + str(tokenInstance.key) + "; Domain=" + settings.DOMAIN + "; Path=/; HttpOnly; SameSite=Strict"
                 serializer = userSafeSerializer(userInstance)
                 response.data = serializer.data
                 print(response.data)
@@ -93,7 +94,7 @@ class userView(APIView):
         response = Response()
         response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
         response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Request-Method'] = 'GET, POST'
         response['Access-Control-Allow-Credentials'] = 'true'
         response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
@@ -103,7 +104,7 @@ class userView(APIView):
         users = user.objects.all()
         serializer = userSerializer(users, many=True)
         response = Response(serializer.data)
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         return response
 
@@ -119,7 +120,7 @@ class userView(APIView):
                 return self.logOut(uToken)
             else:
                 response = Response()
-                response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+                response['Access-Control-Allow-Origin'] = settings.HOST
                 response['Access-Control-Allow-Credentials'] = 'true'
                 tokenInstance = token.objects.get(key = uToken)
                 userInstance = user.objects.get(id = tokenInstance.user_id)

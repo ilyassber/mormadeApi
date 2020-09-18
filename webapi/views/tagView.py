@@ -1,4 +1,5 @@
 import json
+from django.conf import settings
 
 from django.core import serializers
 from django.http import HttpResponse
@@ -29,7 +30,7 @@ class tagView(APIView):
         response = Response()
         response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
         response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Request-Method'] = 'GET, POST'
         response['Access-Control-Allow-Credentials'] = 'true'
         response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
@@ -37,7 +38,7 @@ class tagView(APIView):
 
     def post(self, request):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         data = request.POST.dict()
         print(data)

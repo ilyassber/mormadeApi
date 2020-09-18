@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.fields import JSONField
+from django.db.models import JSONField
 
 class tag(models.Model):
     id = models.AutoField(primary_key=True, unique=True)

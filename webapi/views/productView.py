@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.conf import settings
 import json
 
 from django.http import HttpResponse
@@ -39,7 +40,7 @@ class productList(APIView):
         response = Response()
         response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
         response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Request-Method'] = 'GET, POST'
         response['Access-Control-Allow-Credentials'] = 'true'
         response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
@@ -47,7 +48,7 @@ class productList(APIView):
 
     def get(self, request):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'https://www.mormade.com'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         cookies = json.loads(str(request.COOKIES).replace("\'", "\""))
         uToken = None
@@ -64,7 +65,7 @@ class productList(APIView):
 
     def post(self, request):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
         cookies = getCookies(request)
         utoken = cookies('utoken')
