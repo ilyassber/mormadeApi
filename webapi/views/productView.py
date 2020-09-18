@@ -18,7 +18,7 @@ from .. services.api.getCookies import getCookies
 class productList(APIView):
 
     def getProductImagesJson(self, product):
-        idsList = product.pics_list
+        idsList = product['pics_list']
         images = []
         for i in idsList:
             images.append(image.objects.get(id=i))
@@ -29,9 +29,11 @@ class productList(APIView):
         tokenInstance = token.objects.get(key=uToken)
         userInstance = user.objects.get(id=tokenInstance.user_id)
         products = product.objects.filter(maker_id=userInstance.id)
-        for p in products:
-            p.images = self.getProductImagesJson(p)
-        return products
+        serializer = productSerializer(products, many=True)
+        plist = serializer.data
+        for p in plist:
+            p['images'] = self.getProductImagesJson(p)
+        return plist
 
     def options(self, request):
         response = Response()
@@ -45,15 +47,13 @@ class productList(APIView):
 
     def get(self, request):
         response = Response()
-        response['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+        response['Access-Control-Allow-Origin'] = 'https://www.mormade.com'
         response['Access-Control-Allow-Credentials'] = 'true'
         cookies = json.loads(str(request.COOKIES).replace("\'", "\""))
         uToken = None
         if 'utoken' in cookies:
             uToken = cookies["utoken"]
-            products = self.getProductByToken(uToken)
-            serializer = productSerializer(products, many=True)
-            response.data = serializer.data
+            response.data = self.getProductByToken(uToken)
             response.status = status.HTTP_200_OK
             print(uToken)
         else:
