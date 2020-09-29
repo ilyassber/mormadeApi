@@ -7,6 +7,7 @@ class article(models.Model):
     author_id = models.IntegerField(default=-1)
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=1000, default='')
+    url = models.CharField(max_length=255, null=True)
     cover = models.IntegerField(null=True, default=None)
     text = ArrayField(models.IntegerField(null=True, blank=True), null=True, blank=True)
     tags = ArrayField(models.IntegerField(null=True, blank=True), null=True, blank=True)

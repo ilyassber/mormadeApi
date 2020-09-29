@@ -36,6 +36,17 @@ class tagView(APIView):
         response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
         return response
 
+    def get(self, request):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Allow-Credentials'] = 'true'
+        tags = self.getTagsByLvl(0)
+        serializer = tagSerializer(tags, many=True)
+        response.data = serializer.data
+        response.status = status.HTTP_200_OK
+        return response
+
+
     def post(self, request):
         response = Response()
         response['Access-Control-Allow-Origin'] = settings.HOST

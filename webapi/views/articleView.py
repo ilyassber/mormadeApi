@@ -18,11 +18,14 @@ from .. serializers.contentSerializer import contentSerializer
 from .. serializers.imageSerializer import imageSerializer
 from .. services.api.getCookies import getCookies
 
-class articleView(APIView):
+class articleViewStd(APIView):
 
     def getImageById(self, id):
-        imageInstance = image.objects.get(id=id)
-        serializer = imageSerializer(imageInstance)
+        imageInstance = image.objects.filter(id=id)
+        print(imageInstance)
+        if len(imageInstance) == 0:
+            return None
+        serializer = imageSerializer(imageInstance[0])
         return serializer.data
 
     def getContentById(self, id):
@@ -41,8 +44,11 @@ class articleView(APIView):
             textContent.append(self.getContentById(i))
         return textContent
 
-    def getArticles(self):
-        data = article.objects.all()
+    def getArticles(self, id):
+        if id == None:
+            data = article.objects.all()
+        else :
+            data = article.objects.filter(id=id)
         serializer = articleSerializer(data, many=True)
         articles = serializer.data
         print(articles)
@@ -65,51 +71,23 @@ class articleView(APIView):
                 idsList.append(contentInstance.id)
         return idsList
 
-    def options(self, request):
-        response = Response()
-        response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
-        response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
-        response['Access-Control-Allow-Origin'] = settings.HOST
-        response['Access-Control-Request-Method'] = 'GET, POST'
-        response['Access-Control-Allow-Credentials'] = 'true'
-        response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
-        return response
-
-    def get(self, request):
+    def registerArticle(self, data, utoken):
         response = Response()
         response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
-        cookies = json.loads(str(request.COOKIES).replace("\'", "\""))
-        uToken = None
-        if 'utoken' in cookies:
-            uToken = cookies["utoken"]
-            response.data = self.getArticles()
-            response.status = status.HTTP_200_OK
-        else:
-            print("No cookies!")
-            response.data = 'No products'
-            response.status = status.HTTP_200_OK
-        return response
-
-    def post(self, request):
-        response = Response()
-        response['Access-Control-Allow-Origin'] = settings.HOST
-        response['Access-Control-Allow-Credentials'] = 'true'
-        cookies = getCookies(request)
-        utoken = cookies('utoken')
         if not (utoken == None) and not (utoken == ""):
             tokenInstance = token.objects.get(key = utoken)
             if not (tokenInstance == None) and (tokenInstance.expired == False):
                 userInstance = user.objects.get(id = tokenInstance.user_id)
                 if not (userInstance == None):
                     print(userInstance.id)
-                    query = request.POST.dict()
-                    contents = QueryDict(query['text']).dict().values()
-                    query['text'] = []
-                    serializer = articleSerializer(data = query)
+                    contents = QueryDict(data['text']).dict().values()
+                    data['text'] = []
+                    serializer = articleSerializer(data = data)
                     if serializer.is_valid():
                         articleInstance = serializer.save()
                         articleInstance.author_id = userInstance.id
+                        articleInstance.url = str(articleInstance.id) + '-' + articleInstance.title.replace(" ", "-")
                         articleInstance.text = self.saveArticleContent(contents, articleInstance.id)
                         articleInstance.save()
                         response.data = serializer.data
@@ -131,21 +109,108 @@ class articleView(APIView):
             response.data = 'token not valid'
             response.status = status.HTTP_400_BAD_REQUEST
             return response
+    
+    def getAll(self):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Allow-Credentials'] = 'true'
+        response.data = self.getArticles(None)
+        response.status = status.HTTP_200_OK
+        return response
 
-    def put(self, request, id):
-        snippet = product.objects.get(id=id)
-        serializer = productSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def getById(self, id):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Allow-Credentials'] = 'true'
+        response.data = self.getArticles(id)
+        response.status = status.HTTP_200_OK
+        return response
 
-class productOps(APIView):
+    def options(self, request):
+        response = Response()
+        response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Request-Method'] = 'GET, POST'
+        response['Access-Control-Allow-Credentials'] = 'true'
+        response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
+        return response
 
-    def put(self, request, id):
-        snippet = product.objects.get(id=id)
-        serializer = productSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        return self.getAll()
+
+    def post(self, request):
+        data = request.POST.dict()
+        cookies = getCookies(request)
+        utoken = cookies('utoken')
+        if data["operation"] == "register":
+            return self.registerArticle(QueryDict(data["data"]).dict(), utoken)
+        elif data["operation"] == "all":
+            return self.getAll()
+        elif data["operation"] == "get":
+            return self.getById(int(data["id"]))
+        else :
+            response = Response()
+            response['Access-Control-Allow-Origin'] = settings.HOST
+            response['Access-Control-Allow-Credentials'] = 'true'
+            response.data = "Baaad idea !O_o!"
+            response.status = status.HTTP_400_BAD_REQUEST
+            return response
+
+
+class articleViewId(APIView):
+
+    def getImageById(self, id):
+        imageInstance = image.objects.filter(id=id)
+        print(imageInstance)
+        if len(imageInstance) == 0:
+            return None
+        serializer = imageSerializer(imageInstance[0])
+        return serializer.data
+
+    def getContentById(self, id):
+        contentInstance = content.objects.get(id=id)
+        serializer = contentSerializer(contentInstance)
+        contentData = serializer.data
+        if contentData['type'] == 'text':
+            return contentData
+        else:
+            contentData['image'] = self.getImageById(contentData['image'])
+            return contentData
+
+    def getTextContent(self, list):
+        textContent = []
+        for i in list:
+            textContent.append(self.getContentById(i))
+        return textContent
+
+    def getArticles(self, id):
+        if id == None:
+            data = article.objects.all()
+        else :
+            data = article.objects.filter(id=id)
+        serializer = articleSerializer(data, many=True)
+        articles = serializer.data
+        print(articles)
+        for a in articles:
+            a['cover'] = self.getImageById(a['cover'])
+            a['text'] = self.getTextContent(a['text'])
+        return articles
+
+    def options(self, request):
+        response = Response()
+        response['Allow'] = 'GET, POST, PUT, HEAD, OPTIONS'
+        response['Access-Control-Allow-Methods'] = 'GET, POST, PUT, HEAD, OPTIONS'
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Request-Method'] = 'GET, POST'
+        response['Access-Control-Allow-Credentials'] = 'true'
+        response['Access-Control-Allow-Headers'] = 'Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, Content-Type, X-CSRFToken, Access-Control-Request-Method, Access-Control-Request-Headers'
+        return response
+
+    def get(self, request, id):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Allow-Credentials'] = 'true'
+        response.data = self.getArticles(id)
+        response.status = status.HTTP_200_OK
+        return response

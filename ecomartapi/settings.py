@@ -26,9 +26,11 @@ SECRET_KEY = '31r$#tbv-9yliqxg$5mvtm((hlr3t_mbzy)06rwc9reg=nn9rn'
 DEBUG = True
 
 HOST = 'http://localhost:3000'
+API_HOST = 'http://localhost:8000'
 DOMAIN = 'localhost'
 
 ALLOWED_HOSTS = [
+    'localhost',
     '3.128.254.253',
     'www.mormade.com',
     'www.mormade.ma',

@@ -20,17 +20,18 @@ from webapi.views import productView
 from webapi.views.userView import userView
 from webapi.views.imageView import imageView
 from webapi.views.tagView import tagView
-from webapi.views.articleView import articleView
+from webapi.views.articleView import articleViewStd, articleViewId
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('products/', productView.productList.as_view()),
-    path('products/<int:id>', productView.productOps.as_view()),
-    path('users/', userView.as_view()),
-    path('images/<int:id>', imageView.as_view()),
-    path('images/', imageView.as_view()),
-    path('categories/', tagView.as_view()),
-    path('articles/', articleView.as_view()),
+    path('api/admin/', admin.site.urls),
+    path('api/products/', productView.productList.as_view()),
+    path('api/products/<int:id>', productView.productOps.as_view()),
+    path('api/users/', userView.as_view()),
+    path('api/images/<int:id>', imageView.as_view()),
+    path('api/images/', imageView.as_view()),
+    path('api/categories/', tagView.as_view()),
+    path('api/articles/', articleViewStd.as_view()),
+    path('api/articles/<int:id>', articleViewId.as_view()),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

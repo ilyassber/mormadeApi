@@ -31,7 +31,7 @@ class imageView(APIView):
             #image_serializer.data.path = 'http://localhost:3000/media/images/' + image_serializer.data.name
             #print(image_serializer.data)
             img = image_serializer.save()
-            img.path = settings.HOST + '/media/images/' + str(img.image).split('/')[-1]
+            img.path = settings.API_HOST + '/media/images/' + str(img.image).split('/')[-1]
             img.name = img.name.split('.')[0]
             img.save()
             response.status = status.HTTP_201_CREATED
