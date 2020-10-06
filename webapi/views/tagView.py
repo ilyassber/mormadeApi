@@ -57,10 +57,14 @@ class tagView(APIView):
         uToken = None
         if 'utoken' in cookies:
             uToken = cookies["utoken"]
-            if data['id'] == None or data['id'] == '':
+            if data['id'] != None and data['id'] != '':
+                tags = tag.objects.filter(id=int(data['id']))
+            elif (data['parent'] == None or data['parent'] == '') and (data['lvl'] == None or data['lvl'] == ''):
+                tags = tag.objects.all()
+            elif data['parent'] == None or data['parent'] == '':
                 tags = self.getTagsByLvl(int(data['lvl']))
-            else:
-                tags = self.getTagsByFather(int(data['id']))
+            else :
+                tags = self.getTagsByFather(int(data['parent']))
             serializer = tagSerializer(tags, many=True)
             print(serializer.data)
             response.data = serializer.data

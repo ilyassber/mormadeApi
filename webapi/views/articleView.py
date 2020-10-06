@@ -13,10 +13,12 @@ from .. models.content import content
 from .. models.token import token
 from .. models.user import user
 from .. models.image import image
+from .. models.tag import tag
 from .. serializers.articleSerializer import articleSerializer
 from .. serializers.contentSerializer import contentSerializer
 from .. serializers.imageSerializer import imageSerializer
 from .. services.api.getCookies import getCookies
+from .. serializers.tagSerializer import tagSerializer
 
 class articleViewStd(APIView):
 
@@ -162,11 +164,20 @@ class articleViewId(APIView):
 
     def getImageById(self, id):
         imageInstance = image.objects.filter(id=id)
-        print(imageInstance)
         if len(imageInstance) == 0:
             return None
         serializer = imageSerializer(imageInstance[0])
         return serializer.data
+
+    def getTags(self, list):
+        tags = []
+        if list != None and len(list) > 0:
+            for n in list:
+                tagInstance = tag.objects.get(id=n)
+                print(tagInstance)
+                serializer = tagSerializer(tagInstance)
+                tags.append(serializer.data)
+        return tags
 
     def getContentById(self, id):
         contentInstance = content.objects.get(id=id)
@@ -184,18 +195,15 @@ class articleViewId(APIView):
             textContent.append(self.getContentById(i))
         return textContent
 
-    def getArticles(self, id):
-        if id == None:
-            data = article.objects.all()
-        else :
-            data = article.objects.filter(id=id)
+    def getArticle(self, id):
+        data = article.objects.filter(id=id)
         serializer = articleSerializer(data, many=True)
-        articles = serializer.data
-        print(articles)
-        for a in articles:
-            a['cover'] = self.getImageById(a['cover'])
-            a['text'] = self.getTextContent(a['text'])
-        return articles
+        articleInstance = serializer.data[0]
+        print(articleInstance)
+        articleInstance['cover'] = self.getImageById(articleInstance['cover'])
+        articleInstance['text'] = self.getTextContent(articleInstance['text'])
+        articleInstance['tags'] = self.getTags(articleInstance['tags'])
+        return articleInstance
 
     def options(self, request):
         response = Response()
@@ -211,6 +219,6 @@ class articleViewId(APIView):
         response = Response()
         response['Access-Control-Allow-Origin'] = settings.HOST
         response['Access-Control-Allow-Credentials'] = 'true'
-        response.data = self.getArticles(id)
+        response.data = self.getArticle(id)
         response.status = status.HTTP_200_OK
         return response
