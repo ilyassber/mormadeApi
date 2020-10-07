@@ -21,6 +21,7 @@ from webapi.views.userView import userView
 from webapi.views.imageView import imageView
 from webapi.views.tagView import tagView
 from webapi.views.articleView import articleViewStd, articleViewId
+from webapi.views.messageView import messageView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -34,4 +35,5 @@ urlpatterns = [
     path('api/categories/', tagView.as_view()),
     path('api/articles/', articleViewStd.as_view()),
     path('api/articles/<int:id>', articleViewId.as_view()),
+    path('api/messages/', messageView.as_view()),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
