@@ -59,6 +59,20 @@ class articleViewStd(APIView):
             a['text'] = self.getTextContent(a['text'])
         return articles
 
+    def getTrendingArticles(self):
+        response = Response()
+        response['Access-Control-Allow-Origin'] = settings.HOST
+        response['Access-Control-Allow-Credentials'] = 'true'
+        data = article.objects.filter(trending=True)
+        serializer = articleSerializer(data, many=True)
+        articles = serializer.data
+        for a in articles:
+            a['cover'] = self.getImageById(a['cover'])
+            a['text'] = self.getTextContent(a['text'])
+        response.data = articles
+        response.status = status.HTTP_200_OK
+        return response
+
     def saveArticleContent(self, contents, article_id):
         idsList = []
         newContents = []
@@ -146,11 +160,14 @@ class articleViewStd(APIView):
         cookies = getCookies(request)
         utoken = cookies('utoken')
         if data["operation"] == "register":
+            print(QueryDict(data["data"]).dict())
             return self.registerArticle(QueryDict(data["data"]).dict(), utoken)
         elif data["operation"] == "all":
             return self.getAll()
         elif data["operation"] == "get":
             return self.getById(int(data["id"]))
+        elif data["operation"] == "trending":
+            return self.getTrendingArticles()
         else :
             response = Response()
             response['Access-Control-Allow-Origin'] = settings.HOST

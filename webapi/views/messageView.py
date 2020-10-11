@@ -21,9 +21,6 @@ class messageView(APIView):
         serializer = messageSerializer(data = data)
         if serializer.is_valid():
             messageInstance = serializer.save()
-            messageInstance.date = datetime.date.today()
-            messageInstance.time = datetime.datetime.now().time()
-            messageInstance.save()
             response.data = serializer.data
             response.status = status.HTTP_201_CREATED
             return response
